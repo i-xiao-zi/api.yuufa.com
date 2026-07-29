@@ -11,7 +11,7 @@ import SearchorController from "./controller/searchor";
 import SearchorService from "./service/searchor";
 import NoteController from './controller/note';
 import NoteService from './service/note';
-import CronController from './controller/cron';
+import TaskController from './controller/task';
 import CronService from './service/cron';
 import YouNongPaiController from "./controller/you_nong_pai";
 import YouNongPaiService from "./service/you_nong_pai";
@@ -29,7 +29,7 @@ import { ScheduleModule } from '@nestjs/schedule';
   ],
   controllers: [
     AppController,
-    CronController,
+    TaskController,
     YouNongPaiController,
     AuthController,
     NoteController,

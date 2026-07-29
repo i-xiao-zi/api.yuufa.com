@@ -5,9 +5,9 @@ import "multer";
 import {ApiTags} from "@nestjs/swagger";
 import CronService from '../service/cron';
 
-@ApiTags("Cron")
-@Controller('cron')
-export default class CronController {
+@ApiTags("Task")
+@Controller('task')
+export default class TaskController {
   constructor(private readonly cronService: CronService) {}
 
   @Json(false)
