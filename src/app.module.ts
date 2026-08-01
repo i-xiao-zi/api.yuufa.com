@@ -13,7 +13,6 @@ import NoteController from './controller/note';
 import NoteService from './service/note';
 import TaskController from './controller/task';
 import CronService from './service/cron';
-import YouNongPaiController from "./controller/you_nong_pai";
 import YouNongPaiService from "./service/you_nong_pai";
 import ControllerModule from './module/controller';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -30,7 +29,6 @@ import { ScheduleModule } from '@nestjs/schedule';
   controllers: [
     AppController,
     TaskController,
-    YouNongPaiController,
     AuthController,
     NoteController,
     SearchorController
