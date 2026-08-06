@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
-import {ConfigModule} from '@nestjs/config';
+import {ConfigModule, ConfigService} from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
+import { SupabaseModule } from 'nestjs-supabase-js';
 import AuthModule from './module/auth';
 import AppController from './controller/app';
 import AppService from './service/app';
@@ -15,11 +17,19 @@ import TaskController from './controller/task';
 import CronService from './service/cron';
 import YouNongPaiService from "./service/you_nong_pai";
 import ControllerModule from './module/controller';
-import { ScheduleModule } from '@nestjs/schedule';
+import TaskService from './service/task';
 
 @Module({
   imports: [
     ConfigModule.forRoot({isGlobal: true}),
+    SupabaseModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        supabaseUrl: configService.getOrThrow<string>('SUPABASE_URL'),
+        supabaseKey: configService.getOrThrow<string>('SUPABASE_KEY'),
+      }),
+    }),
+    SupabaseModule.injectClient(),
     MysqlModule,
     ScheduleModule.forRoot(),
     ControllerModule,
@@ -37,6 +47,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     AppService,
     CronService,
     YouNongPaiService,
+    TaskService,
     AuthService,
     NoteService,
     SearchorService,
