@@ -1,29 +1,25 @@
 import { Injectable } from '@nestjs/common';
-import NoteContentModelService from "./note_content.model";
-import NoteCategoryModelService from './note_category.model';
 import { instanceToPlain } from 'class-transformer';
-import { CreateNoteContent, UpdateNoteContent } from 'src/validator/note';
+import { InjectSupabaseClient } from 'nestjs-supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { Database, TablesInsert, TablesUpdate } from './supabase';
 
 @Injectable()
 export default class NoteService {
-  constructor(private readonly noteCategoryModelService: NoteCategoryModelService, private readonly noteContentModelService: NoteContentModelService) {}
+  constructor(@InjectSupabaseClient() private readonly supabase: SupabaseClient<Database>) {}
   index() {
     return instanceToPlain(this.children(0));
   }
-  findContent(id: number) {
-    return instanceToPlain(this.noteContentModelService.find(id));
+  async findContent(id: number) {
+    return (await this.supabase.from('note_contents').select().eq('id', id)).data;
   }
-  createContent(data: CreateNoteContent) {
-    return instanceToPlain(this.noteContentModelService.save(data));
+  async createContent(data: TablesInsert<'note_contents'>) {
+    return (await this.supabase.from('note_contents').insert(data)).data;
   }
-  updateContent(id: number, data: UpdateNoteContent) {
-    return instanceToPlain(this.noteContentModelService.save({...data, id}));
+  async updateContent(id: number, data: TablesUpdate<'note_contents'>) {
+    return (await this.supabase.from('note_contents').update(data).eq('id', id)).data;
   }
   private async children(parent_id: number) {
-    const items = await this.noteCategoryModelService.allByParentId(parent_id);
-    for (let item of items) {
-      item.children = await this.children(item.id);
-    }
-    return items;
+    return (await this.supabase.from('note_categories').select().eq('parent_id', parent_id)).data;
   }
 }

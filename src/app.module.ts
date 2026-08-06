@@ -7,7 +7,7 @@ import AppController from './controller/app';
 import AppService from './service/app';
 import MysqlModule from "./module/mysql";
 import ResponseModule from "./module/response";
-import AuthController from "./controller/auth";
+// import AuthController from "./controller/auth";
 import AuthService from "./service/auth";
 import SearchorController from "./controller/searchor";
 import SearchorService from "./service/searchor";
@@ -15,7 +15,6 @@ import NoteController from './controller/note';
 import NoteService from './service/note';
 import TaskController from './controller/task';
 import CronService from './service/cron';
-import YouNongPaiService from "./service/you_nong_pai";
 import ControllerModule from './module/controller';
 import TaskService from './service/task';
 
@@ -30,25 +29,23 @@ import TaskService from './service/task';
       }),
     }),
     SupabaseModule.injectClient(),
-    MysqlModule,
     ScheduleModule.forRoot(),
     ControllerModule,
-    AuthModule,
+    // AuthModule,
     ResponseModule,
   ],
   controllers: [
     AppController,
     TaskController,
-    AuthController,
+    // AuthController,
     NoteController,
     SearchorController
   ],
   providers: [
     AppService,
     CronService,
-    YouNongPaiService,
     TaskService,
-    AuthService,
+    // AuthService,
     NoteService,
     SearchorService,
   ],

@@ -10,7 +10,7 @@ export default class CronService {
   private readonly repo: string;
   private readonly owner: string;
 
-  constructor(private readonly configService: ConfigService, private readonly userModelService: UserModelService) {
+  constructor(private readonly configService: ConfigService) {
   }
   async youNongPai() {
     const body = new URLSearchParams();

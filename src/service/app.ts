@@ -2,7 +2,6 @@ import {Injectable, NotFoundException} from '@nestjs/common';
 import {hash} from "typeorm/util/StringUtils";
 import {ConfigService} from "@nestjs/config";
 import path from "path";
-import UserModelService from "./user.model";
 
 @Injectable()
 export default class AppService {
@@ -10,13 +9,13 @@ export default class AppService {
   private readonly repo: string;
   private readonly owner: string;
 
-  constructor(private readonly configService: ConfigService, private readonly userModelService: UserModelService) {
+  constructor(private readonly configService: ConfigService) {
     this.token = this.configService.get('GITHUB_TOKEN') as string;
     this.repo = this.configService.get('GITHUB_REPO') as string;
     this.owner = this.configService.get('GITHUB_OWNER') as string;
   }
   async getIndex() {
-    return this.userModelService.all();
+    return "hello world";
   }
 
   async upload(file: Express.Multer.File) {

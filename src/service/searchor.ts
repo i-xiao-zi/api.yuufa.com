@@ -1,12 +1,13 @@
 import {Injectable} from '@nestjs/common';
-import SearchorModelService from "./searchor.model";
-import SearchorTypeModelService from "./searchor_type.model";
-import { instanceToPlain } from "class-transformer";
+import { InjectSupabaseClient } from 'nestjs-supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { Database } from './supabase';
 
 @Injectable()
 export default class SearchorService {
-  constructor(private readonly searchorModelService: SearchorModelService, private readonly searchorTypeModelService: SearchorTypeModelService) {}
-  index() {
-    return instanceToPlain(this.searchorTypeModelService.all());
+  constructor(@InjectSupabaseClient() private readonly supabase: SupabaseClient<Database>) {}
+  async index() {
+    return (await this.supabase.from('searchors').select().is('deleted_at', null)).data;
   }
+
 }
