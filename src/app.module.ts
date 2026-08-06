@@ -10,13 +10,11 @@ import ResponseModule from "./module/response";
 // import AuthController from "./controller/auth";
 import AuthService from "./service/auth";
 import SearchorController from "./controller/searchor";
-import SearchorService from "./service/searchor";
 import NoteController from './controller/note';
-import NoteService from './service/note';
 import TaskController from './controller/task';
-import CronService from './service/cron';
 import ControllerModule from './module/controller';
 import TaskService from './service/task';
+import VideoController from './controller/video';
 
 @Module({
   imports: [
@@ -37,17 +35,15 @@ import TaskService from './service/task';
   controllers: [
     AppController,
     TaskController,
+    VideoController,
     // AuthController,
     NoteController,
     SearchorController
   ],
   providers: [
     AppService,
-    CronService,
     TaskService,
     // AuthService,
-    NoteService,
-    SearchorService,
   ],
 })
 export class AppModule {}

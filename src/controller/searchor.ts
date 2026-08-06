@@ -1,14 +1,15 @@
 import {Controller, Request, Get, Post, UseGuards, Body} from '@nestjs/common';
-import Public from "../decorator/public";
-import SearchorService from "../service/searchor";
+import { InjectSupabaseClient } from 'nestjs-supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { Database } from '../service/supabase';
 
 @Controller('searchor')
 export default class SearchorController {
-  constructor(private readonly searchorService: SearchorService) {}
+  constructor(@InjectSupabaseClient() private readonly supabase: SupabaseClient<Database>) {}
 
-  @Public()
   @Get()
-  public index() {
-    return this.searchorService.index();
+  async index() {
+    const json = await this.supabase.from('searchors').select().is('deleted_at', null);
+    return json.data;
   }
 }

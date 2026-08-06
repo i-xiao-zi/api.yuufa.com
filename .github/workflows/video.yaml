@@ -1,7 +1,7 @@
 name: 视频
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 16 * * *'
   workflow_dispatch:
 
 jobs:
@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: 发送 GET 请求
         run: |
-          response=$(curl -s -w "\n%{http_code}" https://api.yuufa.com/task/video)
+          response=$(curl -s -w "\n%{http_code}" https://yuufa.com/task/video)
           status_code=$(echo "$response" | tail -n1)
           body=$(echo "$response" | sed '$d')
           echo "HTTP 状态码: $status_code"
