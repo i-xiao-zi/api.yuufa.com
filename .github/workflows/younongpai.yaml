@@ -1,0 +1,22 @@
+name: 优农派
+on:
+  schedule:
+    - cron: '*/10 16 * * *'
+  workflow_dispatch:
+
+jobs:
+  make-request:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 发送 GET 请求
+        run: |
+          response=$(curl -s -w "\n%{http_code}" https://yuufa.com/api/task)
+          status_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+          echo "HTTP 状态码: $status_code"
+          echo "响应内容: $body"
+          # 如果状态码不是 200，可以让工作流失败（可选项）
+          if [ "$status_code" -ne 200 ]; then
+            echo "请求失败，状态码: $status_code"
+            exit 1
+          fi
