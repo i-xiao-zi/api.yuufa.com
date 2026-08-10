@@ -8,15 +8,18 @@ jobs:
   make-request:
     runs-on: ubuntu-latest
     steps:
-      - name: 发送 GET 请求
+      - name: 发起 SSE 请求并记录数据
         run: |
-          response=$(curl -s -w "\n%{http_code}" https://api.yuufa.com/task/video)
-          status_code=$(echo "$response" | tail -n1)
-          body=$(echo "$response" | sed '$d')
-          echo "HTTP 状态码: $status_code"
-          echo "响应内容: $body"
-          # 如果状态码不是 200，可以让工作流失败（可选项）
-          if [ "$status_code" -ne 200 ]; then
-            echo "请求失败，状态码: $status_code"
-            exit 1
-          fi
+          curl -N https://api.yuufa.com/task/video \
+               -H "Cache-Control: no-cache" \
+               -H "Connection: keep-alive" \
+               -H "Accept: text/event-stream" \
+               | tee output.txt
+          echo "SSE 数据已保存到 output.txt"
+      - name: 上传数据文件作为工件
+        uses: actions/upload-artifact@v4
+        with:
+          name: sse-data
+          path: output.txt
+          # 如果文件为空，仍可上传（可选）
+          if-no-files-found: warn

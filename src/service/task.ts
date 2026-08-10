@@ -7,6 +7,7 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { Database } from './supabase';
 import {VideoList} from "./video.types";
+import {Observable, Subject} from "rxjs";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -18,14 +19,15 @@ export default class TaskService {
   //    秒 分 时 日 月 周
   @Cron('0 0 0 * * *', { timeZone: 'Asia/Shanghai' })
   async video(id?: number) {
-    this.logger.log('========================');
-    this.logger.log(`开始任务`);
+    const subject = new Subject<string>();
+    subject.next("开始任务");
     // const data = await this.supabase.from('video_origins').select('*').eq('active', true).single();
-    const data = await this.supabase.from('video_origins').select('*').in('id', id ? [id] : [1,2,3]);
+    const data = await this.supabase.from('video_origins').select('*', {count: 'exact'}).in('id', id ? [id] : [1,2,3]);
     for (const origin of data.data??[]) {
-      this.logger.log(origin.title);
+      subject.next(`[${origin.id}/${data.count}]: ${origin.title}`);
       const hour = dayjs().diff(origin.crawled_at, 'hour');
       if (hour <  10) {
+        subject.next(`[${origin.id}]: ${origin.title} 小于10小时 暂时不更新`);
         continue;
       }
       let url = new URL(`${origin?.url}?ac=videolist&pg=1&t=0&h=${hour}`);
@@ -33,7 +35,7 @@ export default class TaskService {
       let page = parseInt(url.searchParams.get('pg') || '1');
       let count = 1;
       for (let i = page; i <= count; i++) {
-        this.logger.log(`${i}/${count}`);
+        subject.next(`[${origin.id}]: ${origin.title} 第${i}/${count}页`);
         url.searchParams.set('pg', i.toString());
         try{
           const response = await fetch(url.toString());
@@ -93,6 +95,7 @@ export default class TaskService {
             });
           }
         } catch(error) {
+          subject.next(`[${origin.id}]: ${origin.title} 更新出错 ${url.toString()} ${error}`);
           await this.supabase.from('video_errors').insert({
             origin_id: origin.id,
             url: url.toString(),
@@ -102,9 +105,9 @@ export default class TaskService {
         }
       }
       await this.supabase.from('video_origins').update({crawled_at: dayjs().format()}).eq('id', origin.id);
-      this.logger.log('完成更新');
+      subject.next(`[${origin.id}]: ${origin.title} 完成更新`);
     }
-
-    return '更新完成';
+    subject.next("任务完成");
+    return subject.asObservable();
   }
 }
