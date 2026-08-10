@@ -1,6 +1,7 @@
 import {Controller, Get, Sse, Param} from '@nestjs/common';
 import Public from "../decorator/public";
 import TaskService from 'src/service/task';
+import { Subject } from 'rxjs';
 
 @Controller('task')
 export default class TaskController {
@@ -8,7 +9,9 @@ export default class TaskController {
 
   @Public()
   @Sse('video')
-  async video() {
-    return await this.taskService.video();
+  video() {
+    const subject = new Subject<string>();
+    this.taskService.video(subject);
+    return subject.asObservable();
   }
 }

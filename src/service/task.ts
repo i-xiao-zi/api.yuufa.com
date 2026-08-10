@@ -16,24 +16,19 @@ export default class TaskService {
   private readonly logger = new Logger(TaskService.name);
   constructor(@InjectSupabaseClient() private readonly supabase: SupabaseClient<Database>) {}
   
-  //    秒 分 时 日 月 周
-  @Cron('0 0 0 * * *', { timeZone: 'Asia/Shanghai' })
-  async video() {
-    const subject = new Subject<string>();
+  async video(subject: Subject<string>) {
     subject.next("开始任务");
     const data = await this.supabase.from('video_origins').select('*').eq('active', true).maybeSingle();
     if (data.error) {
       subject.error(`任务出错: ${data.error}`);
-      subject.complete();
-      return subject.asObservable();
+      return subject.complete();
     }
     const origin = data.data;
     subject.next(`[${origin?.title}: 开始更新`);
     const hour = dayjs().utc().diff(origin?.crawled_at, 'hour');
     if (hour <  10) {
       subject.next(`[${origin?.title}]: 小于10小时 暂时不更新`);
-      subject.complete();
-      return subject.asObservable();
+      return subject.complete();
     }
     let url = new URL(`${origin?.url}?ac=videolist&pg=1&t=0&h=${hour}`);
     // let url = new URL(`${origin?.url}?ac=videolist&pg=1&&t=0`);
@@ -112,7 +107,6 @@ export default class TaskService {
     await this.supabase.from('video_origins').update({crawled_at: dayjs().format()}).eq('id', origin!.id);
     subject.next(`[${origin?.title}]: 完成更新`);
     subject.next("任务完成");
-    subject.complete();
-    return subject.asObservable();
+      return subject.complete();
   }
 }
