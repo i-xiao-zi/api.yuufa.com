@@ -19,7 +19,7 @@ jobs:
       - name: 上传数据文件作为工件
         uses: actions/upload-artifact@v4
         with:
-          name: sse-data
+          name: 请求记录
           path: output.txt
           # 如果文件为空，仍可上传（可选）
           if-no-files-found: warn

@@ -100,7 +100,7 @@ export default class TaskService {
           });
         }
       } catch(error) {
-        subject.next(`[${origin?.title}]: 更新出错 ${url.toString()} ${error}`);
+        subject.error(`[${origin?.title}]: 更新出错 ${url.toString()} ${error}`);
         await this.supabase.from('video_errors').insert({
           origin_id: origin?.id,
           url: url.toString(),
