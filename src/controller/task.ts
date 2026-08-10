@@ -8,7 +8,7 @@ export default class TaskController {
 
   @Public()
   @Sse('video')
-  video(@Param("id") id?: number) {
-    return this.taskService.video(id);
+  async video() {
+    return await this.taskService.video();
   }
 }

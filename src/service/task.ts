@@ -1,5 +1,6 @@
 import {Injectable, Logger} from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
+import { Subject } from "rxjs";
 import { InjectSupabaseClient } from 'nestjs-supabase-js';
 import { SupabaseClient } from '@supabase/supabase-js';
 import dayjs from 'dayjs';
@@ -7,7 +8,6 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { Database } from './supabase';
 import {VideoList} from "./video.types";
-import {Observable, Subject} from "rxjs";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -18,15 +18,20 @@ export default class TaskService {
   
   //    秒 分 时 日 月 周
   @Cron('0 0 0 * * *', { timeZone: 'Asia/Shanghai' })
-  async video(id?: number) {
+  async video() {
     const subject = new Subject<string>();
     subject.next("开始任务");
     const data = await this.supabase.from('video_origins').select('*').eq('active', true).maybeSingle();
+    if (data.error) {
+      subject.error(`任务出错: ${data.error}`);
+      subject.complete();
+      return subject.asObservable();
+    }
     const origin = data.data;
-    subject.next(`[${origin.title}: 开始更新`);
-    const hour = dayjs().diff(origin.crawled_at, 'hour');
+    subject.next(`[${origin?.title}: 开始更新`);
+    const hour = dayjs().utc().diff(origin?.crawled_at, 'hour');
     if (hour <  10) {
-      subject.next(`[${origin.title}]: 小于10小时 暂时不更新`);
+      subject.next(`[${origin?.title}]: 小于10小时 暂时不更新`);
       subject.complete();
       return subject.asObservable();
     }
@@ -35,24 +40,24 @@ export default class TaskService {
     let page = parseInt(url.searchParams.get('pg') || '1');
     let count = 1;
     for (let i = page; i <= count; i++) {
-      subject.next(`[${origin.title}]: 第${i}/${count}页`);
+      subject.next(`[${origin?.title}]: 第${i}/${count}页`);
       url.searchParams.set('pg', i.toString());
       try{
         const response = await fetch(url.toString());
         const data: VideoList = await response.json();
         count = data.pagecount;
         for (const item of data.list) {
-          this.supabase.from(`videos_${origin.id}` as 'videos').select('id, time').order('time').eq('vod_id', item.vod_id).then(async (data) => {
+          this.supabase.from('videos').select('id, time').order('time').eq('vod_id', item.vod_id).then(async (data) => {
             const videos = data.data;
             const video = videos ? videos[videos.length - 1] : null;
             if (videos && videos.length > 1) {
               const ids = videos.map(v => v.id);
               ids.pop()
-              await this.supabase.from(`videos_${origin.id}` as 'videos').delete().in('id', ids);
+              await this.supabase.from('videos').delete().in('id', ids);
             }
             if(video) {
               if (video.time != item.vod_time_add) {
-                await this.supabase.from(`videos_${origin.id}` as 'videos').update({
+                await this.supabase.from('videos').update({
                   total: item.vod_total,
                   version: item.vod_version,
                   state: item.vod_state,
@@ -62,7 +67,7 @@ export default class TaskService {
                 }).eq('id', video.id);
               }
             } else {
-              await this.supabase.from(`videos_${origin.id}` as  'videos').insert({
+              await this.supabase.from('videos').insert({
                 vod_id: item.vod_id,
                 type_id: item.type_id,
                 name: item.vod_name,
@@ -95,17 +100,17 @@ export default class TaskService {
           });
         }
       } catch(error) {
-        subject.next(`[${origin.title}]: 更新出错 ${url.toString()} ${error}`);
+        subject.next(`[${origin?.title}]: 更新出错 ${url.toString()} ${error}`);
         await this.supabase.from('video_errors').insert({
-          origin_id: origin.id,
+          origin_id: origin?.id,
           url: url.toString(),
           error: error.toString(),
           created_at: dayjs().utc().format(),
         });
       }
     }
-    await this.supabase.from('video_origins').update({crawled_at: dayjs().format()}).eq('id', origin.id);
-    subject.next(`[${origin.title}]: 完成更新`);
+    await this.supabase.from('video_origins').update({crawled_at: dayjs().format()}).eq('id', origin!.id);
+    subject.next(`[${origin?.title}]: 完成更新`);
     subject.next("任务完成");
     subject.complete();
     return subject.asObservable();
