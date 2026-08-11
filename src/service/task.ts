@@ -24,7 +24,7 @@ export default class TaskService {
       return subject.complete();
     }
     const origin = data.data;
-    subject.next(`[${origin?.title}: 开始更新`);
+    subject.next(`[${origin?.title}]: 开始更新`);
     const hour = dayjs().utc().diff(origin?.crawled_at, 'hour');
     if (hour <  10) {
       subject.next(`[${origin?.title}]: 小于10小时 暂时不更新`);
@@ -107,6 +107,6 @@ export default class TaskService {
     await this.supabase.from('video_origins').update({crawled_at: dayjs().format()}).eq('id', origin!.id);
     subject.next(`[${origin?.title}]: 完成更新`);
     subject.next("任务完成");
-      return subject.complete();
+    return subject.complete();
   }
 }

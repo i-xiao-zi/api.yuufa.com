@@ -17,7 +17,7 @@ jobs:
                | tee output.txt
           echo "SSE 数据已保存到 output.txt"
       - name: 上传数据文件作为工件
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: 请求记录
           path: output.txt
