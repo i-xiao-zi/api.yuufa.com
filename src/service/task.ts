@@ -42,6 +42,7 @@ export default class TaskService {
         const data: VideoList = await response.json();
         count = data.pagecount;
         for (const item of data.list) {
+          subject.next(`[${origin?.title}]: 第${i}/${count}页 ${item.vod_name}`);
           this.supabase.from('videos').select('id, time').order('time').eq('vod_id', item.vod_id).then(async (data) => {
             const videos = data.data;
             const video = videos ? videos[videos.length - 1] : null;
