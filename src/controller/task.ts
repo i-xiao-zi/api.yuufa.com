@@ -14,4 +14,11 @@ export default class TaskController {
     this.taskService.video(subject);
     return subject.asObservable();
   }
+
+  @Sse()
+  index(){
+    const subject = new Subject<string>();
+    this.taskService.index(subject);
+    return subject.asObservable();
+  }
 }

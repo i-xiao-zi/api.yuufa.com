@@ -1,5 +1,4 @@
-import {Injectable, Logger} from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
+import { Injectable } from '@nestjs/common';
 import { Subject } from "rxjs";
 import { InjectSupabaseClient } from 'nestjs-supabase-js';
 import { SupabaseClient } from '@supabase/supabase-js';
@@ -13,8 +12,13 @@ dayjs.extend(timezone);
 
 @Injectable()
 export default class TaskService {
-  private readonly logger = new Logger(TaskService.name);
   constructor(@InjectSupabaseClient() private readonly supabase: SupabaseClient<Database>) {}
+
+  async index(subject: Subject<string>) {
+    subject.next('开始任务');
+    subject.next('任务完成');
+    subject.complete();
+  }
   
   async video(subject: Subject<string>) {
     subject.next("开始任务");

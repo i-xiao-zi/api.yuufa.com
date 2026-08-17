@@ -1,7 +1,8 @@
 name: 优农派
 on:
   schedule:
-    - cron: '0 */2 * * *'
+    # 暂停使用，转用https://cron-job.org/
+    # - cron: '0 */2 * * *'
   workflow_dispatch:
 
 jobs:
